@@ -1,6 +1,6 @@
 # PlexToDiscord
 ---
-Ce script nécessite un Plex Pass car il utilise la fonction des webhooks incluse avec cette abonnement.
+Ce script nécessite un Plex Pass car il utilise la fonction des webhooks incluse avec cet abonnement.
 
 PlexToDiscord est un petit script Python utilisant l'API discord.py ainsi que les webhooks Plex Media Server, il permet de rendre un affichage d'ajout de film ou de série sur Plex.
 
