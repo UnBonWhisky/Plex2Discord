@@ -9,7 +9,7 @@ Linux : `python3 -m pip install flask discord.py`
 PlexToDiscord est un petit script Python utilisant l'API discord.py ainsi que les webhooks Plex Media Server, il permet de rendre un affichage d'ajout de film ou de série sur Plex.
 
 Problème connu :
-- Impossible de différencier l'ajout de plusieurs épisodes, d'une saison, ou d'une série complète. Tout sera reconnu comme étant considéré comme une série complète. Je ne peux malheureusement rien y faire (du moins, avec les webhooks) car c'est Plex directement qui gère ceci.
+- Lors de l'ajout d'une seule saison sur une série n'étant pas déjà existante sur votre serveur Plex, la série est reconnue comme étant une saison et non une nouvelle série.
 
 -----
 ## Préparation des infos nécessaires à l'emploi :
