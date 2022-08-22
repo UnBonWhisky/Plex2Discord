@@ -71,5 +71,7 @@ Une fois que vous avez entré toutes ces informations dans le script, vous pouve
 
 L'affichage ressemblera à ça :  
 ![image](https://user-images.githubusercontent.com/65244389/185395187-93b4121f-39ac-4636-be52-ee386cd1fb08.png)  
+![image](https://user-images.githubusercontent.com/65244389/185920193-f7518580-0861-4cf8-9475-7acd9dfb0d83.png)  
+![image](https://user-images.githubusercontent.com/65244389/185920245-5cf2a32b-f60d-4c27-8a99-4567aaab7991.png)  
 
 À vous de jouer !!
