@@ -70,7 +70,7 @@ Pour chaque variable, voici l'information que vous devrez entrer :
 Une fois que vous avez entré toutes ces informations dans le script, vous pouvez le lancer et attendre, lors de l'ajout de contenu media, Plex enverra une requête à votre script puis lui s'occupera de renvoyer les informations sur votre serveur Discord.  
 
 L'affichage ressemblera à ça :  
-![image](https://user-images.githubusercontent.com/65244389/185395187-93b4121f-39ac-4636-be52-ee386cd1fb08.png)  
+![image](https://user-images.githubusercontent.com/65244389/185920389-a75d1132-d722-46da-be64-7202836cbfcb.png)  
 ![image](https://user-images.githubusercontent.com/65244389/185920193-f7518580-0861-4cf8-9475-7acd9dfb0d83.png)  
 ![image](https://user-images.githubusercontent.com/65244389/185920245-5cf2a32b-f60d-4c27-8a99-4567aaab7991.png)  
 
