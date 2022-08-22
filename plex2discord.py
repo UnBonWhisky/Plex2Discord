@@ -10,8 +10,10 @@ baseurl = 'http://IP ICI:32400'
 token = ''
 WEBHOOK_URL = ""
 
+minutes = 2
+
 @app.route('/Plex', methods=['GET','POST'])
-def foo():
+def p2d():
     data = json.loads(request.form['payload'])
     print(data['Metadata']['title'])
     if data['event'] == 'library.new' :
@@ -38,16 +40,17 @@ def foo():
             if data['Metadata']['type'] == 'show' :
                 # Si c'est une saison et pas une série entière
                 if export is not None:
-                    Movie_Show_Webhook(
-                        data['Metadata']['title'], #Titre
-                        export['year'], #year
-                        export['summary'], #summary
-                        export['videotype'], #videotype
-                        data['Metadata']['librarySectionTitle'], #Librairie
-                        data['Server']['uuid'], #serveruuid
-                        export['ratingKey'], #ratingkey
-                        export['title'] #saison
-                    )
+                    for x in range(len(export)):
+                        Movie_Show_Webhook(
+                            data['Metadata']['title'], #Titre
+                            export[x]['year'], #year
+                            export[x]['summary'], #summary
+                            export[x]['videotype'], #videotype
+                            data['Metadata']['librarySectionTitle'], #Librairie
+                            data['Server']['uuid'], #serveruuid
+                            export[x]['ratingKey'], #ratingkey
+                            export[x]['title'] #saison
+                        )
                 # Dans ce cas, c'est une série entière
                 else :
                     Movie_Show_Webhook(
@@ -58,7 +61,7 @@ def foo():
                         data['Metadata']['librarySectionTitle'], #Librairie
                         data['Server']['uuid'], #serveruuid
                         data['Metadata']['ratingKey'], #ratingkey
-                        None
+                        None #saison
                     )
             # Si c'est un film
             else :
@@ -66,13 +69,13 @@ def foo():
                 if export is not None:
                     Movie_Show_Webhook(
                         data['Metadata']['title'], #Titre
-                        export['year'], #year
-                        export['summary'], #summary
-                        export['videotype'], #videotype
+                        export[0]['year'], #year
+                        export[0]['summary'], #summary
+                        export[0]['videotype'], #videotype
                         data['Metadata']['librarySectionTitle'], #Librairie
                         data['Server']['uuid'], #serveruuid
-                        export['ratingKey'], #ratingkey
-                        None
+                        export[0]['ratingKey'], #ratingkey
+                        None #saison
                     )
                 else :
                     Movie_Show_Webhook(
@@ -83,12 +86,14 @@ def foo():
                         data['Metadata']['librarySectionTitle'], #Librairie
                         data['Server']['uuid'], #serveruuid
                         data['Metadata']['ratingKey'], #ratingkey
-                        None
+                        None #saison
                     )
 
     return "OK"
 
 def Get_XML_Infos(Titre, datatype):
+
+    global minutes
 
     # On vient interroger le serveur pour avoir des infos sur ce qui a été nouvellement ajouté, puis on enregistre les infos de ce qui nous a été rendu
     url = f'{baseurl}/library/recentlyAdded?X-Plex-Token={token}'
@@ -101,12 +106,28 @@ def Get_XML_Infos(Titre, datatype):
 
     number = 0
 
+    # Cette fonction sert a déterminer si les saisons ont été ajoutées à la suite ou non
+    def isSerie(suite):
+        lastOccurence = ""
+        for x in range(len(suite)):
+            if x != 0 :
+                if suite[x] == suite[x-1]+1:
+                    continue
+                else :
+                    lastOccurence = x
+                    break
+        if lastOccurence == "":
+            lastOccurence = len(suite)
+        return lastOccurence
+
     # Si Plex nous a envoyé l'info que c'est une série
     if datatype == "show":
-        # On vient interroger toutes les séries récemment ajoutées, et cherchons celui qui est intéressant
+
+        # On vient interroger toutes les séries récemment ajoutées, et cherchons celles qui sont intéressantes
         DirectoryRoot = root.findall('Directory')
         SerieID = []
         index = 0
+
         # On vient garder en mémoire ceux dont le nom de la série reçue dans le webhook correspond avec le contenu récemment ajouté
         for directory in DirectoryRoot :
             if directory.get('parentTitle') == Titre :
@@ -114,55 +135,73 @@ def Get_XML_Infos(Titre, datatype):
                 SerieID.append(index)
             index += 1
 
-        # Si on a reçu qu'un seul nom de série / saison dans le lot
-        if number == 1 :
-            export = {
-                'year' :  DirectoryRoot[SerieID[0]].attrib['parentYear'],
-                'summary' : DirectoryRoot[SerieID[0]].attrib['parentSummary'],
-                'videotype' : DirectoryRoot[SerieID[0]].attrib['type'],
-                'ratingKey' : DirectoryRoot[SerieID[0]].attrib['ratingKey'],
-                'title' : DirectoryRoot[SerieID[0]].attrib['title'].replace('Season', 'Saison')
-            }
-        # Si on en a reçu plusieurs
-        else :
-            # Si on a réellement plusieurs saisons qui ont été ajoutées en même temps
-            if int(DirectoryRoot[SerieID[0]].attrib['addedAt']) > int(DirectoryRoot[SerieID[1]].attrib['addedAt']) and int(DirectoryRoot[SerieID[0]].attrib['addedAt']) < int(DirectoryRoot[SerieID[1]].attrib['updatedAt']) :
-                export = None
-            # Sinon c'est que c'était pas en même temps
-            else :
-                export = {
-                    'year' :  DirectoryRoot[SerieID[0]].attrib['parentYear'],
-                    'summary' : DirectoryRoot[SerieID[0]].attrib['parentSummary'],
-                    'videotype' : DirectoryRoot[SerieID[0]].attrib['type'],
-                    'ratingKey' : DirectoryRoot[SerieID[0]].attrib['ratingKey'],
-                    'title' : DirectoryRoot[SerieID[0]].attrib['title'].replace('Season', 'Saison')
-                }
+        # Si on a reçu qu'une seule fois ou + la série dans le lot
+        if number >= 1 :
+            export = []
 
-    # Pareil mais si c'est un film
+            # Si on a pas reçu qu'une seule fois la série dans le lot, on lance la fonction isSerie
+            if number != 1 :
+                serie = isSerie(SerieID)
+            else:
+                serie = 1
+
+            # On vient checker combien on a de saison dans notre série
+            url = f'{baseurl}/library/metadata/{DirectoryRoot[SerieID[0]].attrib["parentRatingKey"]}/children?X-Plex-Token={token}'
+            resp = requests.get(url)
+            open('childrens.xml', 'wb').write(resp.content)
+
+            childrentree = ET.parse('childrens.xml')
+            childrenroot = childrentree.getroot().findall('Directory')
+
+            # Afin d'être sûr que c'est une nouvelle série et pas une nouvelle saison, on vient checker le temps entre les sorties de chaque saison
+            # Si le temps est supérieur à 5 minutes, alors c'est une nouvelle saison uniquement et pas une nouvelle série
+            if serie != 1 :
+                SaisonsALaSuite = 1
+                for x in range(serie):
+                    if x != 0:
+                        if int((int(DirectoryRoot[SerieID[x-1]].attrib['addedAt']) - int(DirectoryRoot[SerieID[x]].attrib['addedAt'])) / 60) <= minutes :
+                            SaisonsALaSuite += 1
+                            continue
+                        else :
+                            break
+                serie = SaisonsALaSuite
+
+            # Si on a autant d'ajouts à la suite qu'il y a de saisons dans notre série, alors on a une nouvelle série
+            if (len(childrenroot)-1) == serie:
+                export = None
+            else :
+            
+                for x in range(serie):
+                    export.append({
+                        'year' :  DirectoryRoot[SerieID[x]].attrib['parentYear'],
+                        'summary' : DirectoryRoot[SerieID[x]].attrib['parentSummary'],
+                        'videotype' : DirectoryRoot[SerieID[x]].attrib['type'],
+                        'ratingKey' : DirectoryRoot[SerieID[x]].attrib['ratingKey'],
+                        'title' : DirectoryRoot[SerieID[x]].attrib['title'].replace('Season', 'Saison')
+                    })
+        
+        else:
+            export = None
+
     elif datatype == "movie" :
-        # On vient interroger tous les films récemment ajoutées, et cherchons celui qui est intéressant
         FilmRoot = root.findall('Video')
         SerieID = []
         index = 0
-        # On vient garder en mémoire ceux dont le nom du film reçu dans le webhook correspond avec le contenu récemment ajouté
         for film in FilmRoot :
             if film.get('title') == Titre :
                 number += 1
-                SerieID.append(index)
-            index += 1
 
-        # Si on a reçu qu'un seul nom de film dans le lot
         if number == 1 :
-            export = {
-                'year' :  FilmRoot[SerieID[0]].attrib['year'],
-                'summary' : FilmRoot[SerieID[0]].attrib['summary'],
+            export = [{
+                'year' :  FilmRoot[SerieID[0]].attrib['parentYear'],
+                'summary' : FilmRoot[SerieID[0]].attrib['parentSummary'],
                 'videotype' : FilmRoot[SerieID[0]].attrib['type'],
-                'ratingKey' : FilmRoot[SerieID[0]].attrib['ratingKey']
-            }
+                'ratingKey' : FilmRoot[SerieID[0]].attrib['ratingKey'],
+                'title' : FilmRoot[SerieID[0]].attrib['ratingKey'].replace('Season', 'Saison')
+            }]
         else :
-            # Si on en a reçu plusieurs
             export = None
-    
+
     return export
             
 
