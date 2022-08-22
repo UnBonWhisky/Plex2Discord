@@ -60,11 +60,12 @@ Le format du webhook doit être le suivant : `http://IP.De.La.Machine:5000/Plex`
 -----
 ## Modification du script pour chaque utilisateur :
 
-Dans le script, vous devriez trouver aux lignes **9 à 11** les variables `baseurl`, `token`, `WEBHOOK_URL`.
+Dans le script, vous devriez trouver aux lignes **10 à 14** les variables `baseurl`, `token`, `WEBHOOK_URL` et `minutes`.
 Pour chaque variable, voici l'information que vous devrez entrer :  
 - **baseurl** : lien du serveur Plex avec le port, si c'est la même machine qui fera tout, ce sera `http://127.0.0.1:32400`, dans le cas contraire, ce sera l'IP du serveur détenant PMS d'installé du style `http://192.168.1.10:32400`.
 - **token** : le token Plex récupéré sur l'URL lors du point 2.
 - **WEBHOOK_URL** : le lien du webhook récupéré sur votre channel discord
+- **minutes** : le temps entre chaque saison ajoutée, afin de déterminer si c'est une nouvelle saison, ou une nouvelle série ajoutée. Par défaut, la valeur est 2 (si vous ajoutez une nouvelle saison 2 minutes après l'ajout de la 1ere saison ajoutée, vous aurez un webhook de saison et pas de série. Avant ce temps, vous aurez un webhook de série et non de saison)
 
 Une fois que vous avez entré toutes ces informations dans le script, vous pouvez le lancer et attendre, lors de l'ajout de contenu media, Plex enverra une requête à votre script puis lui s'occupera de renvoyer les informations sur votre serveur Discord.  
 
