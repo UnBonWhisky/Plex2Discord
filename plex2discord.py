@@ -2,6 +2,7 @@ import pprint
 from flask import Flask, request, json
 import requests
 import discord
+import xml.etree.ElementTree as ET
 
 app = Flask(__name__)
 pp = pprint.PrettyPrinter(indent=2)
