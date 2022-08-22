@@ -1,4 +1,4 @@
-# PlexToDiscord
+# Plex2Discord
 ---
 Ce script nécessite un Plex Pass car il utilise la fonction des webhooks incluse avec cet abonnement.
 
