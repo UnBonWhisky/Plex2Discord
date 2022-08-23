@@ -16,8 +16,11 @@ minutes = 2
 @app.route('/Plex', methods=['GET','POST'])
 def p2d():
     data = json.loads(request.form['payload'])
-    print(data['Metadata']['title'])
     if data['event'] == 'library.new' :
+
+        # Un print du titre pour savoir ce qu'on vient d'ajouter
+        print(data['Metadata']['title'])
+        
         # Si c'est un épisode :
         if data['Metadata']['type'] == 'episode' :
             DownloadImage(data['Metadata']['parentThumb'])
@@ -191,14 +194,16 @@ def Get_XML_Infos(Titre, datatype):
         for film in FilmRoot :
             if film.get('title') == Titre :
                 number += 1
+                SerieID.append(index)
+            index += 1
 
         if number == 1 :
             export = [{
-                'year' :  FilmRoot[SerieID[0]].attrib['parentYear'],
-                'summary' : FilmRoot[SerieID[0]].attrib['parentSummary'],
+                'year' :  FilmRoot[SerieID[0]].attrib['year'],
+                'summary' : FilmRoot[SerieID[0]].attrib['summary'],
                 'videotype' : FilmRoot[SerieID[0]].attrib['type'],
                 'ratingKey' : FilmRoot[SerieID[0]].attrib['ratingKey'],
-                'title' : FilmRoot[SerieID[0]].attrib['ratingKey'].replace('Season', 'Saison')
+                'title' : FilmRoot[SerieID[0]].attrib['title']
             }]
         else :
             export = None
